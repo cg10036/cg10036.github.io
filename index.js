@@ -4,11 +4,13 @@ class Todo {
     if (this.data) {
       try {
         this.data = JSON.parse(this.data);
-      } catch {}
+      } catch {
+        this.data = [];
+      }
+    } else {
+      this.data = [];
     }
     this.idx = 0;
-    if (!this.data) this.data = [];
-    console.log(this.data);
   }
   save() {
     localStorage.setItem("data", JSON.stringify(this.data));
@@ -72,23 +74,28 @@ switch (location.pathname.split("/").at(-1)) {
     let button = document.querySelector(".todo-button");
     content.textContent = todo.getNowData() ?? "등록된 할 일이 없습니다.";
     prev.addEventListener("click", () => {
+      if (mutex) return;
       content.textContent = todo.getPrevData() ?? "등록된 할 일이 없습니다.";
     });
     next.addEventListener("click", () => {
+      if (mutex) return;
       content.textContent = todo.getNextData() ?? "등록된 할 일이 없습니다.";
     });
     button.addEventListener("click", () => {
       if (todo.getNowData() === undefined) return;
       if (mutex) return;
-      mutex = true;
 
       button.classList.add("active");
-      setTimeout(() => {
-        todo.removeNowData();
-        button.classList.remove("active");
-        content.textContent = todo.getNowData() ?? "등록된 할 일이 없습니다.";
 
-        mutex = false;
+      mutex = true;
+      setTimeout(() => {
+        try {
+          todo.removeNowData();
+          button.classList.remove("active");
+          content.textContent = todo.getNowData() ?? "등록된 할 일이 없습니다.";
+        } finally {
+          mutex = false;
+        }
       }, 750);
     });
     break;
